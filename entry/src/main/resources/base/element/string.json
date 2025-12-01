@@ -1,0 +1,52 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "label"
+    },
+    {
+      "name": "welcome",
+      "value": "Welcome to Quick Split"
+    },
+    {
+      "name": "split",
+      "value": "Split bills in seconds"
+    },
+    {
+      "name": "total",
+      "value": "Total with Service: "
+    },
+    {
+      "name": "perperson",
+      "value": "Per Person: "
+    },
+    {
+      "name": "title",
+      "value": "Quick Split"
+    },
+    {
+      "name": "tl",
+      "value": "₺"
+    },
+    {
+      "name": "p1",
+      "value": "Total Amount"
+    },
+    {
+      "name": "p2",
+      "value": "Service Fee %"
+    },
+    {
+      "name": "p3",
+      "value": "Number of People"
+    }
+  ]
+}
