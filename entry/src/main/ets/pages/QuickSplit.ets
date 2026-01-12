@@ -77,12 +77,10 @@ export struct QuickSplit {
 
 @Builder
 function header() {
-  Column() {
     Text($r('app.string.title'))
       .fontSize(28)
       .fontWeight(FontWeight.Bold)
       .textAlign(TextAlign.Center)
       .margin({ top: 16, bottom: 12 })
       .fontColor(Color.White)
-  }
 }
