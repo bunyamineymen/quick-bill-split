@@ -3,6 +3,7 @@ import { ArcList, ArcListItem, ComponentContent } from '@kit.ArkUI';
 import { promptAction } from '@kit.ArkUI';
 import { OnboardingComponent } from './OnboardingComponent';
 import { pasteboard } from '@kit.BasicServicesKit';
+import { vibrator } from '@kit.SensorServiceKit';
 
 @Component
 export struct QuickSplit {
@@ -17,16 +18,34 @@ export struct QuickSplit {
   @State debounceTimer: number = -1
   @StorageLink('showOnboarding') showOnboarding: boolean = true
   @StorageLink('history') history: HistoryRecord[] = [];
+  @StorageLink('currency') currency: string = '₺'
+  @StorageLink('rounding') rounding: number = 0
 
   @State displayPerPerson: number = 0;
+
+  private playHaptic() {
+    try {
+      vibrator.startVibration({
+        type: 'time',
+        duration: 30,
+      }, {
+        id: 0,
+        usage: 'alarm'
+      }, (error: Error) => {
+        if (error) {
+          console.error('vibrator error: ' + JSON.stringify(error));
+        }
+      });
+    } catch (err) {
+      console.error('vibrator error: ' + JSON.stringify(err));
+    }
+  }
 
   private handleInputChange(field: string, value: string) {
     if (this.debounceTimer !== -1) {
       clearTimeout(this.debounceTimer)
     }
     this.debounceTimer = setTimeout(() => {
-      // Clean value: remove thousand separators (.) and handle decimal point (,) if necessary for tr-TR
-      // For calculation, we need a standard number string
       let cleanValue = value.replace(/\./g, '').replace(',', '.')
       let val = Number(cleanValue)
 
@@ -61,6 +80,7 @@ export struct QuickSplit {
   }
 
   private reset() {
+    this.playHaptic()
     promptAction.showDialog({
       title: $r('app.string.reset'),
       message: $r('app.string.confirm_reset'),
@@ -84,6 +104,7 @@ export struct QuickSplit {
   }
 
   private saveRecord() {
+    this.playHaptic()
     const record: HistoryRecord = {
         id: Date.now().toString(),
         date: new Date().toLocaleString(),
@@ -99,6 +120,7 @@ export struct QuickSplit {
   }
 
   private shareResult() {
+    this.playHaptic()
     const text = `Bill Split Result:\nTotal: ${this.vm.formatCurrency(this.vm.totalWithFees)}\nPeople: ${this.vm.people}\nPer Person: ${this.vm.formatCurrency(this.vm.perPerson)}`
     const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text)
     pasteboard.getSystemPasteboard().setData(data)
@@ -110,7 +132,7 @@ export struct QuickSplit {
       Stack() {
         Flex() {
           ArcList({ header: this.header }) {
-            // Total Amount Input with Icon and Formatting
+            // Total Amount Input
             ArcListItem() {
               Column() {
                 Row() {
@@ -141,16 +163,20 @@ export struct QuickSplit {
             ArcListItem() {
               Row() {
                 Button(this.vm.currencySymbol).onClick(() => {
+                  this.playHaptic()
                   const symbols = ['₺', '$', '€', '£']
                   let idx = (symbols.indexOf(this.vm.currencySymbol) + 1) % symbols.length
                   this.vm.currencySymbol = symbols[idx]
+                  this.currency = this.vm.currencySymbol
                 }).width('45%').height(40).backgroundColor($r('app.color.fg')).fontSize(14)
                   .contentDescription('Change Currency')
 
                 Blank().width('10%')
 
                 Button(RoundingType[this.vm.roundingType]).onClick(() => {
+                   this.playHaptic()
                    this.vm.roundingType = (this.vm.roundingType + 1) % 4
+                   this.rounding = this.vm.roundingType
                 }).width('45%').height(40).backgroundColor($r('app.color.fg')).fontSize(10)
                   .contentDescription('Change Rounding Mode')
               }.width('90%').margin({ bottom: 12 })
@@ -199,11 +225,11 @@ export struct QuickSplit {
             // Service Fee Presets
             ArcListItem() {
               Row() {
-                Button('10%').onClick(() => this.vm.serviceFee = 10).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
+                Button('10%').onClick(() => { this.playHaptic(); this.vm.serviceFee = 10; this.animatePerPerson() }).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
                 Blank().width(4)
-                Button('15%').onClick(() => this.vm.serviceFee = 15).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
+                Button('15%').onClick(() => { this.playHaptic(); this.vm.serviceFee = 15; this.animatePerPerson() }).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
                 Blank().width(4)
-                Button('20%').onClick(() => this.vm.serviceFee = 20).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
+                Button('20%').onClick(() => { this.playHaptic(); this.vm.serviceFee = 20; this.animatePerPerson() }).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
               }.margin({ bottom: 8 })
             }
 
@@ -214,6 +240,7 @@ export struct QuickSplit {
                 Row() {
                   Button('-').onClick(() => {
                     if(this.vm.people > 1) {
+                        this.playHaptic()
                         this.vm.people--
                         this.vm.resetWeights(this.vm.people)
                         this.animatePerPerson()
@@ -228,6 +255,7 @@ export struct QuickSplit {
 
                   Button('+').onClick(() => {
                     if(this.vm.people < 99) {
+                        this.playHaptic()
                         this.vm.people++
                         this.vm.resetWeights(this.vm.people)
                         this.animatePerPerson()
@@ -281,14 +309,14 @@ export struct QuickSplit {
                   Blank().width(10)
 
                   Button($r('app.string.history'))
-                    .onClick(() => this.pathStack.pushPathByName('HistoryPage', null))
+                    .onClick(() => { this.playHaptic(); this.pathStack.pushPathByName('HistoryPage', null) })
                     .width(100).height(50).borderRadius(25).backgroundColor($r('app.color.accent'))
                     .contentDescription('View History')
                 }
 
                 Row() {
                    Button($r('app.string.unequal'))
-                    .onClick(() => this.pathStack.pushPathByName('CustomSplit', null))
+                    .onClick(() => { this.playHaptic(); this.pathStack.pushPathByName('CustomSplit', null) })
                     .width('48%').height(40).borderRadius(20).backgroundColor($r('app.color.fg')).margin({ top: 10 }).fontSize(10)
                     .contentDescription('Custom Split')
 
