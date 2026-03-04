@@ -15,15 +15,18 @@ export struct HistoryPage {
           ForEach(this.history, (item: HistoryRecord, index: number) => {
             ListItem() {
               Row() {
-                Column({ alignSelf: ItemAlign.Start }) {
+                Column() {
                   Text(item.date).fontSize(8).fontColor($r('app.color.text_secondary'))
                   Text(`Total: ${item.total.toFixed(2)} ${item.currency}`).fontSize(12).fontColor($r('app.color.text_primary'))
-                }
+                }.alignItems(HorizontalAlign.Start)
+
                 Blank()
-                Column({ alignSelf: ItemAlign.End }) {
+
+                Column() {
                   Text(`${item.people} PPL`).fontSize(8).fontColor($r('app.color.text_secondary'))
                   Text(`${item.perPerson.toFixed(2)} ${item.currency}`).fontSize(14).fontWeight(FontWeight.Bold).fontColor($r('app.color.accent'))
-                }
+                }.alignItems(HorizontalAlign.End)
+
                 Blank().width(4)
                 Button('X').onClick(() => {
                     this.history.splice(index, 1)
