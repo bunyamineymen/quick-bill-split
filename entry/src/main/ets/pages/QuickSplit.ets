@@ -169,7 +169,7 @@ export struct QuickSplit {
                   this.vm.currencySymbol = symbols[idx]
                   this.currency = this.vm.currencySymbol
                 }).width('45%').height(40).backgroundColor($r('app.color.fg')).fontSize(14)
-                  .contentDescription('Change Currency')
+                  .accessibilityText('Change Currency')
 
                 Blank().width('10%')
 
@@ -178,7 +178,7 @@ export struct QuickSplit {
                    this.vm.roundingType = (this.vm.roundingType + 1) % 4
                    this.rounding = this.vm.roundingType
                 }).width('45%').height(40).backgroundColor($r('app.color.fg')).fontSize(10)
-                  .contentDescription('Change Rounding Mode')
+                  .accessibilityText('Change Rounding Mode')
               }.width('90%').margin({ bottom: 12 })
             }
 
@@ -246,7 +246,7 @@ export struct QuickSplit {
                         this.animatePerPerson()
                     }
                   }).width(40).backgroundColor($r('app.color.fg'))
-                    .contentDescription('Decrease People')
+                    .accessibilityText('Decrease People')
 
                   Row() {
                       Image($r('app.media.startIcon')).width(16).height(16).margin({ right: 4 }).fillColor($r('app.color.accent'))
@@ -261,7 +261,7 @@ export struct QuickSplit {
                         this.animatePerPerson()
                     }
                   }).width(40).backgroundColor($r('app.color.fg'))
-                    .contentDescription('Increase People')
+                    .accessibilityText('Increase People')
                 }
                 .width('90%')
                 .justifyContent(FlexAlign.Center)
@@ -287,7 +287,7 @@ export struct QuickSplit {
                 }
 
                 Button($r('app.string.share')).onClick(() => this.shareResult()).fontSize(10).height(24).margin({ top: 8 }).backgroundColor(Color.Transparent).fontColor($r('app.color.accent'))
-                  .contentDescription('Share Results')
+                  .accessibilityText('Share Results')
               }
               .width('90%')
               .padding(16)
@@ -304,28 +304,28 @@ export struct QuickSplit {
                   Button('Reset')
                     .onClick(() => this.reset())
                     .width(70).height(50).borderRadius(25).backgroundColor($r('app.color.error')).fontSize(12)
-                    .contentDescription('Reset Fields')
+                    .accessibilityText('Reset Fields')
 
                   Blank().width(10)
 
                   Button($r('app.string.history'))
                     .onClick(() => { this.playHaptic(); this.pathStack.pushPathByName('HistoryPage', null) })
                     .width(100).height(50).borderRadius(25).backgroundColor($r('app.color.accent'))
-                    .contentDescription('View History')
+                    .accessibilityText('View History')
                 }
 
                 Row() {
                    Button($r('app.string.unequal'))
                     .onClick(() => { this.playHaptic(); this.pathStack.pushPathByName('CustomSplit', null) })
                     .width('48%').height(40).borderRadius(20).backgroundColor($r('app.color.fg')).margin({ top: 10 }).fontSize(10)
-                    .contentDescription('Custom Split')
+                    .accessibilityText('Custom Split')
 
                    Blank().width('4%')
 
                    Button('Save')
                     .onClick(() => this.saveRecord())
                     .width('48%').height(40).borderRadius(20).backgroundColor($r('app.color.success')).margin({ top: 10 }).fontSize(10)
-                    .contentDescription('Save to History')
+                    .accessibilityText('Save to History')
                 }.width('90%')
               }.margin({ bottom: 80 })
             }
