@@ -8,7 +8,7 @@ import { SplitViewModel } from '../viewmodel/SplitViewmodel';
 @Component
 struct Index {
   @Provide('pathStack') pathStack: NavPathStack = new NavPathStack()
-  @Provide('vm') vm: SplitViewModel = new SplitViewModel()
+  @Provide('vm') @State vm: SplitViewModel = new SplitViewModel()
   @State opacityLevel: number = 0
   @State scaleLevel: number = 0.5
 

@@ -10,7 +10,7 @@
     { "name": "text_secondary", "value": "#94A3B8" },
     { "name": "error", "value": "#EF4444" },
     { "name": "success", "value": "#22C55E" },
-    { "name": "card_bg", "value": "rgba(30, 41, 59, 0.7)" },
-    { "name": "card_border", "value": "rgba(255, 255, 255, 0.1)" }
+    { "name": "card_bg", "value": "#B31E293B" },
+    { "name": "card_border", "value": "#1AFFFFFF" }
   ]
 }
