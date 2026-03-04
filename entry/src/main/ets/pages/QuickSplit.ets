@@ -3,6 +3,7 @@ import { ArcList, ArcListItem, ComponentContent } from '@kit.ArkUI';
 import { promptAction } from '@kit.ArkUI';
 import { OnboardingComponent } from './OnboardingComponent';
 import { pasteboard } from '@kit.BasicServicesKit';
+import { vibrator } from '@kit.SensorServiceKit';
 
 @Component
 export struct QuickSplit {
@@ -12,16 +13,42 @@ export struct QuickSplit {
   @Consume('pathStack') pathStack: NavPathStack;
   @Consume('vm') vm: SplitViewModel;
   @State showErrors: boolean = false
+  @State serviceError: boolean = false
+  @State peopleError: boolean = false
   @State debounceTimer: number = -1
   @StorageLink('showOnboarding') showOnboarding: boolean = true
   @StorageLink('history') history: HistoryRecord[] = [];
+  @StorageLink('currency') currency: string = '₺'
+  @StorageLink('rounding') rounding: number = 0
+
+  @State displayPerPerson: number = 0;
+
+  private playHaptic() {
+    try {
+      vibrator.startVibration({
+        type: 'time',
+        duration: 30,
+      }, {
+        id: 0,
+        usage: 'alarm'
+      }, (error: Error) => {
+        if (error) {
+          console.error('vibrator error: ' + JSON.stringify(error));
+        }
+      });
+    } catch (err) {
+      console.error('vibrator error: ' + JSON.stringify(err));
+    }
+  }
 
   private handleInputChange(field: string, value: string) {
     if (this.debounceTimer !== -1) {
       clearTimeout(this.debounceTimer)
     }
     this.debounceTimer = setTimeout(() => {
-      let val = Number(value)
+      let cleanValue = value.replace(/\./g, '').replace(',', '.')
+      let val = Number(cleanValue)
+
       if (field === 'total') {
           if (this.vm.isValidTotal(val)) {
               this.vm.total = val
@@ -30,15 +57,30 @@ export struct QuickSplit {
               this.showErrors = true
           }
       } else if (field === 'service') {
-          this.vm.serviceFee = val
+          if (this.vm.isValidService(val)) {
+              this.vm.serviceFee = val
+              this.serviceError = false
+          } else {
+              this.serviceError = true
+          }
       } else if (field === 'tip') {
-          this.vm.tipPercentage = val
+          if (this.vm.isValidTip(val)) {
+              this.vm.tipPercentage = val
+          }
       }
+      this.animatePerPerson()
       this.debounceTimer = -1
     }, 200)
   }
 
+  private animatePerPerson() {
+    animateTo({ duration: 500, curve: Curve.EaseOut }, () => {
+      this.displayPerPerson = this.vm.perPerson
+    })
+  }
+
   private reset() {
+    this.playHaptic()
     promptAction.showDialog({
       title: $r('app.string.reset'),
       message: $r('app.string.confirm_reset'),
@@ -54,11 +96,15 @@ export struct QuickSplit {
         this.vm.people = 1
         this.vm.resetWeights(1)
         this.showErrors = false
+        this.serviceError = false
+        this.peopleError = false
+        this.displayPerPerson = 0
       }
     })
   }
 
   private saveRecord() {
+    this.playHaptic()
     const record: HistoryRecord = {
         id: Date.now().toString(),
         date: new Date().toLocaleString(),
@@ -74,6 +120,7 @@ export struct QuickSplit {
   }
 
   private shareResult() {
+    this.playHaptic()
     const text = `Bill Split Result:\nTotal: ${this.vm.formatCurrency(this.vm.totalWithFees)}\nPeople: ${this.vm.people}\nPer Person: ${this.vm.formatCurrency(this.vm.perPerson)}`
     const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text)
     pasteboard.getSystemPasteboard().setData(data)
@@ -88,19 +135,26 @@ export struct QuickSplit {
             // Total Amount Input
             ArcListItem() {
               Column() {
-                TextInput({ placeholder: $r('app.string.p1'), text: this.vm.total > 0 ? this.vm.total.toString() : '' })
-                  .type(InputType.Number)
-                  .width('90%')
-                  .height(48)
-                  .borderRadius($r('app.float.input_radius'))
-                  .backgroundColor($r('app.color.fg'))
-                  .fontColor($r('app.color.text_primary'))
-                  .placeholderColor($r('app.color.text_secondary'))
-                  .onChange(value => {
-                    this.handleInputChange('total', value)
-                  })
+                Row() {
+                  Text(this.vm.currencySymbol).fontSize(18).margin({ left: 12, right: 8 }).fontColor($r('app.color.accent'))
+                  TextInput({ placeholder: $r('app.string.p1'), text: this.vm.total > 0 ? this.vm.total.toLocaleString('tr-TR') : '' })
+                    .type(InputType.Number)
+                    .layoutWeight(1)
+                    .height(48)
+                    .borderRadius($r('app.float.input_radius'))
+                    .backgroundColor(Color.Transparent)
+                    .fontColor($r('app.color.text_primary'))
+                    .onChange(value => {
+                      this.handleInputChange('total', value)
+                    })
+                }
+                .width('90%')
+                .backgroundColor($r('app.color.fg'))
+                .borderRadius($r('app.float.input_radius'))
+                .border({ width: this.showErrors ? 1 : 0, color: $r('app.color.error') })
+
                 if (this.showErrors) {
-                  Text($r('app.string.err_total')).fontSize(10).fontColor($r('app.color.error'))
+                  Text($r('app.string.err_total')).fontSize(10).fontColor($r('app.color.error')).margin({ top: 4 })
                 }
               }.margin({ bottom: 8 })
             }
@@ -108,19 +162,23 @@ export struct QuickSplit {
             // Currency & Rounding Selectors
             ArcListItem() {
               Row() {
-                // Currency Selector (Simplified as a cycle button)
                 Button(this.vm.currencySymbol).onClick(() => {
+                  this.playHaptic()
                   const symbols = ['₺', '$', '€', '£']
                   let idx = (symbols.indexOf(this.vm.currencySymbol) + 1) % symbols.length
                   this.vm.currencySymbol = symbols[idx]
+                  this.currency = this.vm.currencySymbol
                 }).width('45%').height(40).backgroundColor($r('app.color.fg')).fontSize(14)
+                  .contentDescription('Change Currency')
 
                 Blank().width('10%')
 
-                // Rounding Selector
                 Button(RoundingType[this.vm.roundingType]).onClick(() => {
+                   this.playHaptic()
                    this.vm.roundingType = (this.vm.roundingType + 1) % 4
+                   this.rounding = this.vm.roundingType
                 }).width('45%').height(40).backgroundColor($r('app.color.fg')).fontSize(10)
+                  .contentDescription('Change Rounding Mode')
               }.width('90%').margin({ bottom: 12 })
             }
 
@@ -129,59 +187,81 @@ export struct QuickSplit {
               Row() {
                 Column() {
                   Text($r('app.string.p2')).fontSize(10).fontColor($r('app.color.text_secondary'))
-                  TextInput({ placeholder: '10', text: this.vm.serviceFee.toString() })
-                    .type(InputType.Number)
-                    .width('42%')
-                    .borderRadius($r('app.float.input_radius'))
-                    .backgroundColor($r('app.color.fg'))
-                    .onChange(value => {
-                      this.handleInputChange('service', value)
-                    })
-                }
-                Blank().width('6%')
+                  Row() {
+                     Text('%').fontSize(12).margin({ left: 8 }).fontColor($r('app.color.accent'))
+                     TextInput({ placeholder: '10', text: this.vm.serviceFee.toString() })
+                        .type(InputType.Number)
+                        .width('80%')
+                        .backgroundColor(Color.Transparent)
+                        .onChange(value => {
+                          this.handleInputChange('service', value)
+                        })
+                  }
+                  .backgroundColor($r('app.color.fg'))
+                  .borderRadius($r('app.float.input_radius'))
+                  .border({ width: this.serviceError ? 1 : 0, color: $r('app.color.error') })
+                }.width('45%')
+
+                Blank().width('10%')
+
                 Column() {
                   Text($r('app.string.tip')).fontSize(10).fontColor($r('app.color.text_secondary'))
-                  TextInput({ placeholder: '5', text: this.vm.tipPercentage.toString() })
-                    .type(InputType.Number)
-                    .width('42%')
-                    .borderRadius($r('app.float.input_radius'))
-                    .backgroundColor($r('app.color.fg'))
-                    .onChange(value => {
-                      this.handleInputChange('tip', value)
-                    })
-                }
+                  Row() {
+                      Text('%').fontSize(12).margin({ left: 8 }).fontColor($r('app.color.accent'))
+                      TextInput({ placeholder: '5', text: this.vm.tipPercentage.toString() })
+                        .type(InputType.Number)
+                        .width('80%')
+                        .backgroundColor(Color.Transparent)
+                        .onChange(value => {
+                          this.handleInputChange('tip', value)
+                        })
+                  }
+                  .backgroundColor($r('app.color.fg'))
+                  .borderRadius($r('app.float.input_radius'))
+                }.width('45%')
               }.width('90%').margin({ bottom: 8 })
             }
 
             // Service Fee Presets
             ArcListItem() {
               Row() {
-                Button('10%').onClick(() => this.vm.serviceFee = 10).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
+                Button('10%').onClick(() => { this.playHaptic(); this.vm.serviceFee = 10; this.animatePerPerson() }).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
                 Blank().width(4)
-                Button('15%').onClick(() => this.vm.serviceFee = 15).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
+                Button('15%').onClick(() => { this.playHaptic(); this.vm.serviceFee = 15; this.animatePerPerson() }).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
                 Blank().width(4)
-                Button('20%').onClick(() => this.vm.serviceFee = 20).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
+                Button('20%').onClick(() => { this.playHaptic(); this.vm.serviceFee = 20; this.animatePerPerson() }).fontSize(12).height(30).backgroundColor($r('app.color.fg'))
               }.margin({ bottom: 8 })
             }
 
-            // People Stepper
+            // People Stepper with Icon
             ArcListItem() {
               Column() {
                 Text($r('app.string.p3')).fontSize(10).fontColor($r('app.color.text_secondary'))
                 Row() {
                   Button('-').onClick(() => {
                     if(this.vm.people > 1) {
+                        this.playHaptic()
                         this.vm.people--
                         this.vm.resetWeights(this.vm.people)
+                        this.animatePerPerson()
                     }
                   }).width(40).backgroundColor($r('app.color.fg'))
-                  Text(this.vm.people.toString()).fontSize(18).fontWeight(FontWeight.Bold).width(40).textAlign(TextAlign.Center).fontColor($r('app.color.text_primary'))
+                    .contentDescription('Decrease People')
+
+                  Row() {
+                      Image($r('app.media.startIcon')).width(16).height(16).margin({ right: 4 }).fillColor($r('app.color.accent'))
+                      Text(this.vm.people.toString()).fontSize(18).fontWeight(FontWeight.Bold).fontColor($r('app.color.text_primary'))
+                  }.width(60).justifyContent(FlexAlign.Center)
+
                   Button('+').onClick(() => {
                     if(this.vm.people < 99) {
+                        this.playHaptic()
                         this.vm.people++
                         this.vm.resetWeights(this.vm.people)
+                        this.animatePerPerson()
                     }
                   }).width(40).backgroundColor($r('app.color.fg'))
+                    .contentDescription('Increase People')
                 }
                 .width('90%')
                 .justifyContent(FlexAlign.Center)
@@ -191,7 +271,7 @@ export struct QuickSplit {
               }.margin({ bottom: 16 })
             }
 
-            // Result Card
+            // Result Card with Animation
             ArcListItem() {
               Column() {
                 Text($r('app.string.total')).fontSize(12).fontColor($r('app.color.text_secondary'))
@@ -200,13 +280,14 @@ export struct QuickSplit {
                 Divider().margin({ top: 8, bottom: 8 }).color($r('app.color.card_border'))
 
                 Text($r('app.string.perperson')).fontSize(16).fontWeight(FontWeight.Medium).fontColor($r('app.color.accent'))
-                Text(this.vm.formatCurrency(this.vm.perPerson)).fontSize(28).fontWeight(FontWeight.Bold).fontColor($r('app.color.accent'))
+                Text(this.vm.formatCurrency(this.displayPerPerson)).fontSize(28).fontWeight(FontWeight.Bold).fontColor($r('app.color.accent'))
 
                 if (this.vm.roundingType !== RoundingType.NONE) {
                   Text('Diff: ' + this.vm.roundingDifference.toFixed(2)).fontSize(10).fontColor($r('app.color.text_secondary'))
                 }
 
                 Button($r('app.string.share')).onClick(() => this.shareResult()).fontSize(10).height(24).margin({ top: 8 }).backgroundColor(Color.Transparent).fontColor($r('app.color.accent'))
+                  .contentDescription('Share Results')
               }
               .width('90%')
               .padding(16)
@@ -223,24 +304,28 @@ export struct QuickSplit {
                   Button('Reset')
                     .onClick(() => this.reset())
                     .width(70).height(50).borderRadius(25).backgroundColor($r('app.color.error')).fontSize(12)
+                    .contentDescription('Reset Fields')
 
                   Blank().width(10)
 
                   Button($r('app.string.history'))
-                    .onClick(() => this.pathStack.pushPathByName('HistoryPage', null))
+                    .onClick(() => { this.playHaptic(); this.pathStack.pushPathByName('HistoryPage', null) })
                     .width(100).height(50).borderRadius(25).backgroundColor($r('app.color.accent'))
+                    .contentDescription('View History')
                 }
 
                 Row() {
                    Button($r('app.string.unequal'))
-                    .onClick(() => this.pathStack.pushPathByName('CustomSplit', null))
+                    .onClick(() => { this.playHaptic(); this.pathStack.pushPathByName('CustomSplit', null) })
                     .width('48%').height(40).borderRadius(20).backgroundColor($r('app.color.fg')).margin({ top: 10 }).fontSize(10)
+                    .contentDescription('Custom Split')
 
                    Blank().width('4%')
 
                    Button('Save')
                     .onClick(() => this.saveRecord())
                     .width('48%').height(40).borderRadius(20).backgroundColor($r('app.color.success')).margin({ top: 10 }).fontSize(10)
+                    .contentDescription('Save to History')
                 }.width('90%')
               }.margin({ bottom: 80 })
             }

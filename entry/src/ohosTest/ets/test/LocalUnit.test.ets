@@ -1,5 +1,5 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
-import { SplitViewModel, RoundingType } from '../../../main/ets/viewmodel/SplitViewmodel'
+import { SplitViewModel, RoundingType } from '../../../../main/ets/viewmodel/SplitViewmodel'
 
 export default function localUnitTest() {
   describe('SplitViewModelTest', () => {

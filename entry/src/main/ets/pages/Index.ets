@@ -12,6 +12,9 @@ struct Index {
   @State opacityLevel: number = 0
   @State scaleLevel: number = 0.5
 
+  @StorageLink('currency') currency: string = '₺'
+  @StorageLink('rounding') rounding: number = 0
+
   @Builder
   PageMap(name: string) {
     if (name === 'QuickSplit') {
@@ -29,6 +32,12 @@ struct Index {
     PersistentStorage.persistProp('history', []);
     PersistentStorage.persistProp('favorites', []);
     PersistentStorage.persistProp('showOnboarding', true);
+    PersistentStorage.persistProp('currency', '₺');
+    PersistentStorage.persistProp('rounding', 0);
+
+    // Load persisted values into VM
+    this.vm.currencySymbol = this.currency;
+    this.vm.roundingType = this.rounding;
 
     animateTo({ duration: 1000, curve: Curve.EaseInOut }, () => {
       this.opacityLevel = 1
