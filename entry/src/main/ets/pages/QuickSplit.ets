@@ -108,6 +108,7 @@ export struct QuickSplit {
             // Currency & Rounding Selectors
             ArcListItem() {
               Row() {
+                // Currency Selector (Simplified as a cycle button)
                 Button(this.vm.currencySymbol).onClick(() => {
                   const symbols = ['₺', '$', '€', '£']
                   let idx = (symbols.indexOf(this.vm.currencySymbol) + 1) % symbols.length
@@ -116,6 +117,7 @@ export struct QuickSplit {
 
                 Blank().width('10%')
 
+                // Rounding Selector
                 Button(RoundingType[this.vm.roundingType]).onClick(() => {
                    this.vm.roundingType = (this.vm.roundingType + 1) % 4
                 }).width('45%').height(40).backgroundColor($r('app.color.fg')).fontSize(10)

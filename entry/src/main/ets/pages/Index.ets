@@ -48,7 +48,7 @@ struct Index {
   build() {
     Navigation(this.pathStack) {
       Column() {
-        Image($r('app.media.app_icon'))
+        Image($r('app.media.startIcon'))
           .width(100).height(100)
           .margin({ bottom: 24 })
           .scale({ x: this.scaleLevel, y: this.scaleLevel })

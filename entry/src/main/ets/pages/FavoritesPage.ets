@@ -27,10 +27,11 @@ export struct FavoritesPage {
           ForEach(this.favorites, (item: HistoryRecord, index: number) => {
             ListItem() {
               Row() {
-                Column({ alignSelf: ItemAlign.Start }) {
+                Column() {
                   Text(`Total: ${item.total} ${item.currency}`).fontSize(14).fontColor($r('app.color.text_primary'))
                   Text(`${item.people} PPL`).fontSize(10).fontColor($r('app.color.text_secondary'))
-                }
+                }.alignItems(HorizontalAlign.Start)
+
                 Blank()
                 Row() {
                     Button('Load').onClick(() => {
