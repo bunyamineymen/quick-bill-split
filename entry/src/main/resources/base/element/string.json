@@ -1,52 +1,32 @@
 {
   "string": [
-    {
-      "name": "module_desc",
-      "value": "module description"
-    },
-    {
-      "name": "EntryAbility_desc",
-      "value": "description"
-    },
-    {
-      "name": "EntryAbility_label",
-      "value": "label"
-    },
-    {
-      "name": "welcome",
-      "value": "Welcome to Quick Split"
-    },
-    {
-      "name": "split",
-      "value": "Split bills in seconds"
-    },
-    {
-      "name": "total",
-      "value": "Total with Service: "
-    },
-    {
-      "name": "perperson",
-      "value": "Per Person: "
-    },
-    {
-      "name": "title",
-      "value": "Quick Split"
-    },
-    {
-      "name": "tl",
-      "value": "₺"
-    },
-    {
-      "name": "p1",
-      "value": "Total Amount"
-    },
-    {
-      "name": "p2",
-      "value": "Service Fee %"
-    },
-    {
-      "name": "p3",
-      "value": "Number of People"
-    }
+    { "name": "module_desc", "value": "module description" },
+    { "name": "EntryAbility_desc", "value": "description" },
+    { "name": "EntryAbility_label", "value": "QuickSplit" },
+    { "name": "welcome", "value": "Welcome to Quick Split" },
+    { "name": "split", "value": "Split bills in seconds" },
+    { "name": "total", "value": "Total with Fees" },
+    { "name": "perperson", "value": "Per Person" },
+    { "name": "title", "value": "Quick Split" },
+    { "name": "tl", "value": "₺" },
+    { "name": "usd", "value": "$" },
+    { "name": "eur", "value": "€" },
+    { "name": "gbp", "value": "£" },
+    { "name": "p1", "value": "Total Amount" },
+    { "name": "p2", "value": "Service Fee %" },
+    { "name": "p3", "value": "Number of People" },
+    { "name": "tip", "value": "Tip %" },
+    { "name": "presets", "value": "Presets" },
+    { "name": "history", "value": "History" },
+    { "name": "favorites", "value": "Favorites" },
+    { "name": "reset", "value": "Reset" },
+    { "name": "confirm_reset", "value": "Are you sure you want to clear all fields?" },
+    { "name": "share", "value": "Share" },
+    { "name": "unequal", "value": "Custom Split" },
+    { "name": "settings", "value": "Settings" },
+    { "name": "rounding", "value": "Rounding" },
+    { "name": "err_total", "value": "Max 999,999" },
+    { "name": "err_people", "value": "Min 1, Max 99" },
+    { "name": "copied", "value": "Result copied to clipboard" }
   ]
 }

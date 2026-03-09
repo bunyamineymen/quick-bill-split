@@ -1,8 +1,11 @@
 {
   "float": [
-    {
-      "name": "page_text_font_size",
-      "value": "50fp"
-    }
+    { "name": "display_fs", "value": "28fp" },
+    { "name": "title_fs", "value": "22fp" },
+    { "name": "body_fs", "value": "16fp" },
+    { "name": "caption_fs", "value": "12fp" },
+    { "name": "card_radius", "value": "24vp" },
+    { "name": "input_radius", "value": "12vp" },
+    { "name": "item_spacing", "value": "12vp" }
   ]
 }
