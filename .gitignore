@@ -90,11 +90,9 @@ out/
 /detail/
 /shell/
 
-*.xls
-*.xlsx
-*.xlsm
-*.xltx
-*.xltm
+# Allow Project_Analysis.xlsx and Project_Summary
+!Project_Analysis.xlsx
+!Project_Summary_V2.pptx
 
 /.appanalyzer
 /.cache
